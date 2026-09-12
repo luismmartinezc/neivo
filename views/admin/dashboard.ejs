@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Neivo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+  <div class="admin-wrap">
+    <div class="admin-header">
+      <div>
+        <h1>Neivo</h1>
+        <div class="sub">Panel de administración — <a href="/" target="_blank">ver sitio</a></div>
+      </div>
+      <form method="POST" action="/admin/logout" class="inline">
+        <button type="submit" class="logout-link" style="background:none;border:none;cursor:pointer;">Cerrar sesión</button>
+      </form>
+    </div>
+
+    <% if (saved) { %>
+      <div class="banner">Cambios guardados.</div>
+    <% } %>
+    <% if (error) { %>
+      <div class="banner error"><%= error %></div>
+    <% } %>
+
+    <form method="POST" action="/admin/save" enctype="multipart/form-data">
+
+      <section class="admin-section">
+        <h2>Portada</h2>
+        <p class="section-note">El texto principal que aparece al abrir el sitio.</p>
+
+        <div class="field">
+          <label for="hero_tagline">Descripción</label>
+          <textarea id="hero_tagline" name="hero_tagline"><%= content.hero.tagline %></textarea>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="hero_location">Con base en</label>
+            <input type="text" id="hero_location" name="hero_location" value="<%= content.hero.location %>">
+          </div>
+          <div class="field">
+            <label for="hero_disciplines">Disciplinas</label>
+            <input type="text" id="hero_disciplines" name="hero_disciplines" value="<%= content.hero.disciplines %>">
+          </div>
+        </div>
+        <div class="field">
+          <label for="hero_availability">Disponibilidad</label>
+          <input type="text" id="hero_availability" name="hero_availability" value="<%= content.hero.availability %>">
+        </div>
+      </section>
+
+      <section class="admin-section">
+        <h2>Trabajo seleccionado</h2>
+        <p class="section-note">Cada proyecto tiene una foto o video, un título, una línea de contexto y una descripción corta. Sube una imagen o un video (MP4) para reemplazar el marcador.</p>
+
+        <% content.projects.forEach(function(project){ %>
+          <div class="item-card">
+            <div class="media-preview">
+              <% if (project.media && project.media.url) { %>
+                <% if (project.media.type === 'video') { %>
+                  <video src="<%= project.media.url %>" muted loop autoplay playsinline></video>
+                <% } else { %>
+                  <img src="<%= project.media.url %>" alt="<%= project.title %>">
+                <% } %>
+              <% } else { %>
+                <span class="placeholder-label">Sin foto/video</span>
+              <% } %>
+            </div>
+            <div>
+              <div class="field">
+                <label>Título</label>
+                <input type="text" name="project_title_<%= project.id %>" value="<%= project.title %>">
+              </div>
+              <div class="field">
+                <label>Línea de contexto (tipo, año)</label>
+                <input type="text" name="project_meta_<%= project.id %>" value="<%= project.meta %>">
+              </div>
+              <div class="field">
+                <label>Descripción</label>
+                <textarea name="project_desc_<%= project.id %>"><%= project.desc %></textarea>
+              </div>
+              <div class="item-actions">
+                <div class="file-field">
+                  <label style="margin-bottom:0;">Reemplazar foto/video</label>
+                  <input type="file" name="media_<%= project.id %>" accept="image/*,video/*">
+                </div>
+              </div>
+            </div>
+          </div>
+        <% }); %>
+
+        <div class="add-row" style="margin-top:24px;">
+          <!-- delete buttons for existing projects, kept outside the save form so they act immediately -->
+        </div>
+      </section>
+
+      <section class="admin-section">
+        <h2>Estudio</h2>
+        <p class="section-note">La frase de presentación y la lista de capacidades.</p>
+
+        <div class="field">
+          <label for="about_statement">Presentación</label>
+          <textarea id="about_statement" name="about_statement"><%= content.about.statement %></textarea>
+        </div>
+
+        <% content.about.capabilities.forEach(function(cap){ %>
+          <div class="field-row" style="margin-bottom:12px;">
+            <div class="field" style="margin-bottom:0;">
+              <label>Capacidad</label>
+              <input type="text" name="cap_title_<%= cap.id %>" value="<%= cap.title %>">
+            </div>
+            <div class="field" style="margin-bottom:0;">
+              <label>Detalle</label>
+              <input type="text" name="cap_detail_<%= cap.id %>" value="<%= cap.detail %>">
+            </div>
+          </div>
+        <% }); %>
+      </section>
+
+      <section class="admin-section" style="border-bottom:none;">
+        <h2>Contacto</h2>
+        <div class="field">
+          <label for="contact_email">Correo</label>
+          <input type="email" id="contact_email" name="contact_email" value="<%= content.contact.email %>">
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="contact_instagramHandle">Usuario de Instagram (texto visible)</label>
+            <input type="text" id="contact_instagramHandle" name="contact_instagramHandle" value="<%= content.contact.instagramHandle %>">
+          </div>
+          <div class="field">
+            <label for="contact_instagramUrl">Enlace de Instagram</label>
+            <input type="text" id="contact_instagramUrl" name="contact_instagramUrl" value="<%= content.contact.instagramUrl %>">
+          </div>
+        </div>
+      </section>
+
+      <div class="save-bar">
+        <button type="submit" class="btn btn-primary">Guardar cambios</button>
+      </div>
+    </form>
+
+    <section class="admin-section">
+      <h2>Añadir o eliminar proyectos</h2>
+      <p class="section-note">Un proyecto nuevo aparece al final de la lista de arriba con texto de ejemplo — edítalo y guarda. Eliminar un proyecto también borra su foto/video del servidor.</p>
+
+      <form method="POST" action="/admin/projects/add" class="inline">
+        <button type="submit" class="btn btn-sm">+ Añadir proyecto</button>
+      </form>
+
+      <div style="margin-top:20px;">
+        <% content.projects.forEach(function(project){ %>
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-top:1px solid var(--line); font-size:0.9rem;">
+            <span><%= project.title %></span>
+            <form method="POST" action="/admin/projects/<%= project.id %>/delete" class="inline" onsubmit="return confirm('¿Eliminar este proyecto?');">
+              <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
+            </form>
+          </div>
+        <% }); %>
+      </div>
+    </section>
+
+    <section class="admin-section" style="border-bottom:none;">
+      <h2>Añadir o eliminar capacidades</h2>
+      <p class="section-note">La lista de la sección "Estudio".</p>
+
+      <form method="POST" action="/admin/capabilities/add" class="inline">
+        <button type="submit" class="btn btn-sm">+ Añadir capacidad</button>
+      </form>
+
+      <div style="margin-top:20px;">
+        <% content.about.capabilities.forEach(function(cap){ %>
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-top:1px solid var(--line); font-size:0.9rem;">
+            <span><%= cap.title %></span>
+            <form method="POST" action="/admin/capabilities/<%= cap.id %>/delete" class="inline" onsubmit="return confirm('¿Eliminar esta capacidad?');">
+              <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
+            </form>
+          </div>
+        <% }); %>
+      </div>
+    </section>
+
+  </div>
+</body>
+</html>

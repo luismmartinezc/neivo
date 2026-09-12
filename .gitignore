@@ -1,0 +1,10 @@
+node_modules/
+.env
+.DS_Store
+npm-debug.log*
+
+# Local content/uploads are runtime data, not source — the seed file
+# in data/content.json IS committed so a fresh deploy has starting content.
+# Locally-generated uploads shouldn't be committed:
+/data/uploads/*
+!/data/uploads/.gitkeep

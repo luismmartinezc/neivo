@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEIVO — Producción Audiovisual</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,500;0,6..96,600;1,6..96,400&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/site.css">
+</head>
+<body>
+
+<div class="grain"></div>
+
+<header>
+  <div class="wordmark">Neivo</div>
+  <nav>
+    <ul>
+      <li><a href="#trabajo">Trabajo</a></li>
+      <li><a href="#estudio">Estudio</a></li>
+      <li><a href="#contacto">Contacto</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main class="wrap">
+
+  <section class="hero">
+    <h1>Neivo</h1>
+    <p class="hero-tagline"><%= content.hero.tagline %></p>
+    <div class="hero-meta">
+      <div><span>Con base en</span><%= content.hero.location %></div>
+      <div><span>Disciplinas</span><%= content.hero.disciplines %></div>
+      <div><span>Disponibilidad</span><%= content.hero.availability %></div>
+    </div>
+    <div class="scroll-cue"><div class="line"></div>Ver trabajo</div>
+  </section>
+
+  <section id="trabajo">
+    <div class="section-head">
+      <h2>Trabajo seleccionado</h2>
+      <p>Una muestra de proyectos recientes en video musical, marca y contenido.</p>
+    </div>
+
+    <% content.projects.forEach(function(project){ %>
+      <div class="project">
+        <div class="project-media">
+          <% if (project.media && project.media.url) { %>
+            <% if (project.media.type === 'video') { %>
+              <span class="play-dot"></span>
+              <video src="<%= project.media.url %>" autoplay muted loop playsinline></video>
+            <% } else { %>
+              <img src="<%= project.media.url %>" alt="<%= project.title %>">
+            <% } %>
+          <% } else { %>
+            <span class="play-dot"></span>
+            <span class="placeholder-label">Reel de <%= project.title %></span>
+          <% } %>
+        </div>
+        <div class="project-info">
+          <h3><%= project.title %></h3>
+          <div class="meta"><%= project.meta %></div>
+          <p class="desc"><%= project.desc %></p>
+        </div>
+      </div>
+    <% }); %>
+  </section>
+
+  <section id="estudio" class="about">
+    <p><%= content.about.statement %></p>
+    <div class="capabilities">
+      <% content.about.capabilities.forEach(function(cap){ %>
+        <div class="row"><div><%= cap.title %></div><span><%= cap.detail %></span></div>
+      <% }); %>
+    </div>
+  </section>
+
+  <footer id="contacto">
+    <div class="big">Hablemos.</div>
+    <div class="footer-grid">
+      <div class="footer-links">
+        <a href="mailto:<%= content.contact.email %>"><%= content.contact.email %></a>
+        <a href="<%= content.contact.instagramUrl %>" target="_blank" rel="noopener"><%= content.contact.instagramHandle %></a>
+      </div>
+      <div class="footer-status">
+        <div><span class="dot"></span>Santo Domingo — <span id="local-time">--:--</span></div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div>Neivo, producción audiovisual</div>
+      <div id="year"></div>
+    </div>
+  </footer>
+
+</main>
+
+<script>
+  document.getElementById('year').textContent = '© ' + new Date().getFullYear();
+
+  function updateTime(){
+    const el = document.getElementById('local-time');
+    const now = new Date().toLocaleTimeString('es-DO', {
+      timeZone: 'America/Santo_Domingo',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+    el.textContent = now;
+  }
+  updateTime();
+  setInterval(updateTime, 1000 * 30);
+</script>
+
+</body>
+</html>

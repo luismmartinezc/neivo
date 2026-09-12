@@ -1,0 +1,59 @@
+{
+  "hero": {
+    "tagline": "Casa de producción audiovisual. Video musical, contenido de marca y piezas para redes, con una misma mirada detrás de cámara.",
+    "location": "Santo Domingo, RD",
+    "disciplines": "Dirección, fotografía, edición",
+    "availability": "Proyectos 2026"
+  },
+  "projects": [
+    {
+      "id": "ace-international",
+      "title": "Ace International",
+      "meta": "Contenido de marca, 2025",
+      "desc": "Reemplaza este texto con una línea breve sobre el proyecto: qué se produjo y qué lo hizo distinto.",
+      "media": null
+    },
+    {
+      "id": "mocore",
+      "title": "Mocore",
+      "meta": "Video musical, 2025",
+      "desc": "Reemplaza este texto con una línea breve sobre el proyecto: qué se produjo y qué lo hizo distinto.",
+      "media": null
+    },
+    {
+      "id": "cecl",
+      "title": "Cecl",
+      "meta": "Contenido para redes, 2024",
+      "desc": "Reemplaza este texto con una línea breve sobre el proyecto: qué se produjo y qué lo hizo distinto.",
+      "media": null
+    },
+    {
+      "id": "ministerio-no-yo-sino-cristo",
+      "title": "Ministerio No Yo Sino Cristo",
+      "meta": "Documental / evento en vivo, 2024",
+      "desc": "Reemplaza este texto con una línea breve sobre el proyecto: qué se produjo y qué lo hizo distinto.",
+      "media": null
+    },
+    {
+      "id": "villa-nazaret",
+      "title": "Villa Nazaret",
+      "meta": "Contenido de marca, 2024",
+      "desc": "Reemplaza este texto con una línea breve sobre el proyecto: qué se produjo y qué lo hizo distinto.",
+      "media": null
+    }
+  ],
+  "about": {
+    "statement": "Producimos imagen en movimiento para marcas, artistas y comunidades que necesitan verse tan bien como suenan.",
+    "capabilities": [
+      { "id": "cap-1", "title": "Video musical", "detail": "Dirección y edición" },
+      { "id": "cap-2", "title": "Comerciales de marca", "detail": "Concepto a entrega" },
+      { "id": "cap-3", "title": "Contenido para redes", "detail": "Formato corto" },
+      { "id": "cap-4", "title": "Fotografía", "detail": "Set y producto" }
+    ]
+  },
+  "contact": {
+    "email": "fneiffy@gmail.com",
+    "instagramHandle": "@neyy.ffy",
+    "instagramUrl": "https://instagram.com/neyy.ffy"
+  }
+}
