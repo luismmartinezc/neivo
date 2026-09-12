@@ -49,7 +49,7 @@
           <% if (project.media && project.media.url) { %>
             <% if (project.media.type === 'video') { %>
               <span class="play-dot"></span>
-              <video class="lazy-video" data-src="<%= project.media.url %>" muted loop playsinline preload="none"></video>
+              <video class="lazy-video" src="<%= project.media.url %>" muted loop playsinline preload="metadata"></video>
             <% } else { %>
               <img src="<%= project.media.url %>" alt="<%= project.title %>">
             <% } %>
@@ -119,9 +119,6 @@
       entries.forEach((entry) => {
         const video = entry.target;
         if (entry.isIntersecting){
-          if (!video.src && video.dataset.src){
-            video.src = video.dataset.src;
-          }
           video.play().catch(() => {});
         } else {
           video.pause();
@@ -131,11 +128,8 @@
 
     lazyVideos.forEach((video) => io.observe(video));
   } else {
-    // Sin soporte de IntersectionObserver: cargar de una vez como respaldo.
-    lazyVideos.forEach((video) => {
-      video.src = video.dataset.src;
-      video.play().catch(() => {});
-    });
+    // Sin soporte de IntersectionObserver: reproducir de una vez como respaldo.
+    lazyVideos.forEach((video) => video.play().catch(() => {}));
   }
 </script>
 
