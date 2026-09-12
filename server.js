@@ -3,9 +3,11 @@ require('dotenv').config();
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
+const { execFile } = require('child_process');
 const express = require('express');
 const session = require('express-session');
 const multer = require('multer');
+const { path: ffmpegPath } = require('@ffmpeg-installer/ffmpeg');
 
 const app = express();
 
@@ -89,6 +91,30 @@ function deleteMediaFile(media) {
   fs.unlink(filePath, () => {}); // ignore errors (already gone, etc.)
 }
 
+// Comprime y reescala un video subido a algo liviano para web:
+// máximo 1280px de ancho, H.264, sin audio (los reels del sitio van
+// siempre en "muted"), y "faststart" para que empiece a reproducirse
+// antes de terminar de descargar.
+function compressVideo(inputPath, outputPath) {
+  return new Promise((resolve, reject) => {
+    const args = [
+      '-y',
+      '-i', inputPath,
+      '-vf', 'scale=w=min(1280\\,iw):h=-2',
+      '-c:v', 'libx264',
+      '-preset', 'veryfast',
+      '-crf', '28',
+      '-an',
+      '-movflags', '+faststart',
+      outputPath
+    ];
+    execFile(ffmpegPath, args, { maxBuffer: 1024 * 1024 * 20 }, (err) => {
+      if (err) return reject(err);
+      resolve();
+    });
+  });
+}
+
 // --- Public site ---------------------------------------------------------
 app.get('/', (req, res) => {
   const content = readContent();
@@ -133,49 +159,73 @@ app.post('/admin/logout', (req, res) => {
 });
 
 // --- Admin: save all text + replace media -------------------------------
-app.post('/admin/save', requireAuth, upload.any(), (req, res) => {
-  const content = readContent();
-  const body = req.body;
-  const files = req.files || [];
+app.post('/admin/save', requireAuth, upload.any(), async (req, res) => {
+  try {
+    const content = readContent();
+    const body = req.body;
+    const files = req.files || [];
 
-  content.hero.tagline = body.hero_tagline ?? content.hero.tagline;
-  content.hero.location = body.hero_location ?? content.hero.location;
-  content.hero.disciplines = body.hero_disciplines ?? content.hero.disciplines;
-  content.hero.availability = body.hero_availability ?? content.hero.availability;
+    content.hero.tagline = body.hero_tagline ?? content.hero.tagline;
+    content.hero.location = body.hero_location ?? content.hero.location;
+    content.hero.disciplines = body.hero_disciplines ?? content.hero.disciplines;
+    content.hero.availability = body.hero_availability ?? content.hero.availability;
 
-  content.about.statement = body.about_statement ?? content.about.statement;
+    content.about.statement = body.about_statement ?? content.about.statement;
 
-  content.contact.email = body.contact_email ?? content.contact.email;
-  content.contact.instagramHandle = body.contact_instagramHandle ?? content.contact.instagramHandle;
-  content.contact.instagramUrl = body.contact_instagramUrl ?? content.contact.instagramUrl;
+    content.contact.email = body.contact_email ?? content.contact.email;
+    content.contact.instagramHandle = body.contact_instagramHandle ?? content.contact.instagramHandle;
+    content.contact.instagramUrl = body.contact_instagramUrl ?? content.contact.instagramUrl;
 
-  content.projects.forEach((project) => {
-    const titleKey = `project_title_${project.id}`;
-    const metaKey = `project_meta_${project.id}`;
-    const descKey = `project_desc_${project.id}`;
-    if (body[titleKey] !== undefined) project.title = body[titleKey];
-    if (body[metaKey] !== undefined) project.meta = body[metaKey];
-    if (body[descKey] !== undefined) project.desc = body[descKey];
+    for (const project of content.projects) {
+      const titleKey = `project_title_${project.id}`;
+      const metaKey = `project_meta_${project.id}`;
+      const descKey = `project_desc_${project.id}`;
+      if (body[titleKey] !== undefined) project.title = body[titleKey];
+      if (body[metaKey] !== undefined) project.meta = body[metaKey];
+      if (body[descKey] !== undefined) project.desc = body[descKey];
 
-    const uploaded = files.find((f) => f.fieldname === `media_${project.id}`);
-    if (uploaded) {
-      deleteMediaFile(project.media);
-      project.media = {
-        type: uploaded.mimetype.startsWith('video/') ? 'video' : 'image',
-        url: `/uploads/${uploaded.filename}`
-      };
+      const uploaded = files.find((f) => f.fieldname === `media_${project.id}`);
+      if (!uploaded) continue;
+
+      const previousMedia = project.media;
+
+      if (uploaded.mimetype.startsWith('video/')) {
+        const compressedFilename = `${path.parse(uploaded.filename).name}-web.mp4`;
+        const compressedPath = path.join(UPLOADS_DIR, compressedFilename);
+        try {
+          await compressVideo(uploaded.path, compressedPath);
+          fs.unlink(uploaded.path, () => {}); // ya no necesitamos el archivo original sin comprimir
+          project.media = { type: 'video', url: `/uploads/${compressedFilename}` };
+        } catch (compressErr) {
+          // Si ffmpeg falla por alguna razón, no perdemos la subida:
+          // usamos el archivo original sin comprimir como respaldo.
+          console.error('No se pudo comprimir el video, se usa el original:', compressErr.message);
+          project.media = { type: 'video', url: `/uploads/${uploaded.filename}` };
+        }
+      } else {
+        project.media = { type: 'image', url: `/uploads/${uploaded.filename}` };
+      }
+
+      deleteMediaFile(previousMedia);
     }
-  });
 
-  content.about.capabilities.forEach((cap) => {
-    const titleKey = `cap_title_${cap.id}`;
-    const detailKey = `cap_detail_${cap.id}`;
-    if (body[titleKey] !== undefined) cap.title = body[titleKey];
-    if (body[detailKey] !== undefined) cap.detail = body[detailKey];
-  });
+    content.about.capabilities.forEach((cap) => {
+      const titleKey = `cap_title_${cap.id}`;
+      const detailKey = `cap_detail_${cap.id}`;
+      if (body[titleKey] !== undefined) cap.title = body[titleKey];
+      if (body[detailKey] !== undefined) cap.detail = body[detailKey];
+    });
 
-  writeContent(content);
-  res.redirect('/admin?saved=1');
+    writeContent(content);
+    res.redirect('/admin?saved=1');
+  } catch (err) {
+    console.error('Error al guardar:', err);
+    res.status(500).render('admin/dashboard', {
+      content: readContent(),
+      saved: false,
+      error: 'Ocurrió un error al guardar los cambios. Intenta de nuevo.'
+    });
+  }
 });
 
 // --- Admin: add / delete projects ---------------------------------------

@@ -28,7 +28,7 @@
       <div class="banner error"><%= error %></div>
     <% } %>
 
-    <form method="POST" action="/admin/save" enctype="multipart/form-data">
+    <form method="POST" action="/admin/save" enctype="multipart/form-data" id="save-form">
 
       <section class="admin-section">
         <h2>Portada</h2>
@@ -141,9 +141,21 @@
       </section>
 
       <div class="save-bar">
-        <button type="submit" class="btn btn-primary">Guardar cambios</button>
+        <button type="submit" class="btn btn-primary" id="save-button">Guardar cambios</button>
       </div>
     </form>
+
+    <script>
+      // Si hay un video nuevo seleccionado, avisamos que puede tardar
+      // unos segundos más: el servidor lo comprime antes de guardarlo.
+      document.getElementById('save-form').addEventListener('submit', function(){
+        const hasVideo = Array.from(this.querySelectorAll('input[type="file"]'))
+          .some((input) => input.files[0] && input.files[0].type.startsWith('video/'));
+        const button = document.getElementById('save-button');
+        button.disabled = true;
+        button.textContent = hasVideo ? 'Optimizando video…' : 'Guardando…';
+      });
+    </script>
 
     <section class="admin-section">
       <h2>Añadir o eliminar proyectos</h2>
