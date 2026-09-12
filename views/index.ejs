@@ -49,7 +49,7 @@
           <% if (project.media && project.media.url) { %>
             <% if (project.media.type === 'video') { %>
               <span class="play-dot"></span>
-              <video src="<%= project.media.url %>" autoplay muted loop playsinline></video>
+              <video class="lazy-video" data-src="<%= project.media.url %>" muted loop playsinline preload="none"></video>
             <% } else { %>
               <img src="<%= project.media.url %>" alt="<%= project.title %>">
             <% } %>
@@ -109,6 +109,34 @@
   }
   updateTime();
   setInterval(updateTime, 1000 * 30);
+
+  // Solo carga y reproduce el video de cada proyecto cuando entra en
+  // pantalla, y lo pausa al salir — así no se descargan los 5 videos
+  // a la vez apenas abres la página.
+  const lazyVideos = document.querySelectorAll('.lazy-video');
+  if (lazyVideos.length && 'IntersectionObserver' in window){
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        const video = entry.target;
+        if (entry.isIntersecting){
+          if (!video.src && video.dataset.src){
+            video.src = video.dataset.src;
+          }
+          video.play().catch(() => {});
+        } else {
+          video.pause();
+        }
+      });
+    }, { rootMargin: '200px 0px', threshold: 0.25 });
+
+    lazyVideos.forEach((video) => io.observe(video));
+  } else {
+    // Sin soporte de IntersectionObserver: cargar de una vez como respaldo.
+    lazyVideos.forEach((video) => {
+      video.src = video.dataset.src;
+      video.play().catch(() => {});
+    });
+  }
 </script>
 
 </body>

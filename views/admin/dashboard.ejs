@@ -63,7 +63,7 @@
             <div class="media-preview">
               <% if (project.media && project.media.url) { %>
                 <% if (project.media.type === 'video') { %>
-                  <video src="<%= project.media.url %>" muted loop autoplay playsinline></video>
+                  <video src="<%= project.media.url %>" muted loop playsinline preload="metadata" controls></video>
                 <% } else { %>
                   <img src="<%= project.media.url %>" alt="<%= project.title %>">
                 <% } %>
